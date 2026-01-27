@@ -1,4 +1,4 @@
-name: Deploy to K8s
+name: Local Deploy to K8s
 
 on:
   push:
@@ -7,28 +7,15 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    # YE SABSE ZARURI HAI: Isse GitHub ko pata chalega ki VPS wale runner par chalana hai
+    runs-on: self-hosted 
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      # Ye step file ko VPS ke upar bhej dega
-      - name: Copy website.yaml to VPS
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.SERVER_IP }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "website.yaml"
-          target: "~/my-k8s-project/"
-
-
-      # Ye step VPS par command chalayega
-      - name: SSH and Apply K8s
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SERVER_IP }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            sudo kubectl apply -f ~/my-k8s-project/website.yaml
+      - name: Apply K8s configuration
+        run: |
+          # Kyunki hum ab VPS ke andar hi hain, humein na SSH chahiye na SCP
+          # Seedha kubectl apply chalao
+          sudo kubectl apply -f website.yaml
