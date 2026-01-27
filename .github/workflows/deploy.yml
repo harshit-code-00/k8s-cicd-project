@@ -1,0 +1,34 @@
+name: Deploy to K8s
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # Ye step file ko VPS ke upar bhej dega
+      - name: Copy website.yaml to VPS
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "website.yaml"
+          target: "~/my-k8s-project/"
+
+
+      # Ye step VPS par command chalayega
+      - name: SSH and Apply K8s
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            sudo kubectl apply -f ~/my-k8s-project/website.yaml
